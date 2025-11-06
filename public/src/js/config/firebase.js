@@ -74,9 +74,6 @@ export async function loadConfig() {
  * @returns {Object} Firebase Auth instance
  */
 export function getAuthInstance() {
-  if (!auth) {
-    throw new Error('Firebase not initialized. Call initializeFirebase first.');
-  }
   return auth;
 }
 
@@ -85,9 +82,6 @@ export function getAuthInstance() {
  * @returns {Object} Firestore instance
  */
 export function getDbInstance() {
-  if (!db) {
-    throw new Error('Firebase not initialized. Call initializeFirebase first.');
-  }
   return db;
 }
 
