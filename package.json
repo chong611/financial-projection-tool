@@ -1,6 +1,6 @@
 {
   "name": "financial-projection-tool",
-  "version": "1.0.0",
+  "version": "2.0.1",
   "description": "Professional financial projection calculator with Firebase integration",
   "type": "module",
   "main": "server/index.js",
