@@ -242,6 +242,16 @@ function initializeUI() {
     downloadCsvBtn.addEventListener('click', handleDownloadCSV);
   }
   
+  // View toggle
+  const viewToggle = document.getElementById('viewToggle');
+  if (viewToggle) {
+    viewToggle.addEventListener('change', () => {
+      if (currentProjectionResults && currentProjectionResults.success) {
+        displayResults(currentProjectionResults);
+      }
+    });
+  }
+  
   // Modal buttons
   const modalConfirmBtn = document.getElementById('modalConfirmBtn');
   if (modalConfirmBtn) {
@@ -284,8 +294,8 @@ async function handleCalculate() {
       return;
     }
     
-    // Store results
-    currentProjectionResults = result.results;
+    // Store full results object
+    currentProjectionResults = result;
     
     // Display results
     displayResults(result);
@@ -449,7 +459,7 @@ async function handleDeleteProjection() {
  * Handle download CSV
  */
 function handleDownloadCSV() {
-  if (!currentProjectionResults || currentProjectionResults.length === 0) {
+  if (!currentProjectionResults || !currentProjectionResults.results || currentProjectionResults.results.length === 0) {
     showNotification('No results to export. Please calculate a projection first.', 'warning');
     return;
   }
@@ -457,7 +467,7 @@ function handleDownloadCSV() {
   const projectionName = document.getElementById('projectionName').value || 'projection';
   const filename = `${projectionName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.csv`;
   
-  downloadResultsCSV(currentProjectionResults, filename);
+  downloadResultsCSV(currentProjectionResults.results, filename);
 }
 
 /**

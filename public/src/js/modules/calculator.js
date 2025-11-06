@@ -38,7 +38,8 @@ export function runProjection(data) {
     const startMonth = startDate.getMonth() + 1; // 1-12
     
     let projectionMonth = 0;
-    const maxMonths = 600; // 50 years maximum
+    const maxMonths = 1200; // 100 years maximum (safety limit)
+    const perpetualWealthThreshold = 0.001; // If returns exceed spending consistently
     
     // Sort dynamic changes by effective date
     const sortedDynamicSpending = (data.dynamicSpending || [])
@@ -67,8 +68,13 @@ export function runProjection(data) {
     let nextIncomeChangeIndex = 0;
     let nextLumpSumIndex = 0;
     
+    // Track if wealth is perpetual (growing consistently)
+    let consecutiveGrowthMonths = 0;
+    const requiredGrowthMonths = 120; // 10 years of consistent growth = perpetual
+    let isPerpetualWealth = false;
+    
     // Calculate for each month
-    while (projectionMonth < maxMonths && capital >= 0) {
+    while (projectionMonth < maxMonths && capital >= 0 && !isPerpetualWealth) {
       const currentYear = Math.floor(projectionMonth / 12);
       const currentMonthInYear = (projectionMonth % 12) + 1;
       const currentAge = data.currentAge + currentYear;
@@ -154,7 +160,18 @@ export function runProjection(data) {
       
       // Update capital
       const capitalBeforeReturns = capital + netCashFlow;
+      const previousCapital = capital;
       capital = capitalBeforeReturns + investmentReturns;
+      
+      // Check for perpetual wealth (capital growing consistently)
+      if (capital > previousCapital && netCashFlow + investmentReturns > 0) {
+        consecutiveGrowthMonths++;
+        if (consecutiveGrowthMonths >= requiredGrowthMonths) {
+          isPerpetualWealth = true;
+        }
+      } else {
+        consecutiveGrowthMonths = 0;
+      }
       
       // Store monthly result
       results.push({
@@ -185,7 +202,7 @@ export function runProjection(data) {
     return {
       success: true,
       results: results,
-      summary: calculateSummary(results, data)
+      summary: calculateSummary(results, data, isPerpetualWealth)
     };
     
   } catch (error) {
@@ -203,9 +220,10 @@ export function runProjection(data) {
  * Calculate summary statistics
  * @param {Array} results - Monthly results
  * @param {Object} data - Input data
+ * @param {boolean} isPerpetualWealth - Whether wealth is perpetual
  * @returns {Object} Summary statistics
  */
-function calculateSummary(results, data) {
+function calculateSummary(results, data, isPerpetualWealth = false) {
   if (!results || results.length === 0) {
     return null;
   }
@@ -249,6 +267,7 @@ function calculateSummary(results, data) {
     peakCapitalDate: peakCapitalMonth.date,
     capitalDepleted,
     depletionAge,
+    isPerpetualWealth,
     avgMonthlyIncome,
     avgMonthlySpending,
     avgMonthlyReturns,

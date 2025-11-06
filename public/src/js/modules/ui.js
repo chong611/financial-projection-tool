@@ -25,8 +25,16 @@ export function hideLoading() {
   const loader = document.getElementById('loader');
   const appContent = document.getElementById('appContent');
   
-  if (loader) loader.classList.add('hidden');
-  if (appContent) appContent.classList.remove('opacity-50', 'pointer-events-none');
+  if (loader) {
+    loader.classList.add('hidden');
+    loader.style.display = 'none';
+  }
+  if (appContent) {
+    appContent.classList.remove('opacity-50', 'pointer-events-none', 'hidden');
+    appContent.style.display = 'block';
+  }
+  // Ensure body is scrollable
+  document.body.style.overflow = 'auto';
 }
 
 /**
@@ -193,7 +201,10 @@ export function displayResults(projectionResult) {
   if (resultsMessage && summary) {
     let message = `Projection calculated for ${summary.totalYears} years (${summary.totalMonths} months). `;
     
-    if (summary.capitalDepleted) {
+    if (summary.isPerpetualWealth) {
+      message += `🎉 Your wealth is perpetual! With your current capital of ${formatCurrency(summary.finalCapital)} and consistent positive cash flow, your wealth will last forever.`;
+      resultsMessage.className = 'text-lg font-semibold text-emerald-600 dark:text-emerald-400 mb-4';
+    } else if (summary.capitalDepleted) {
       message += `⚠️ Capital depleted at age ${summary.depletionAge}.`;
       resultsMessage.className = 'text-lg font-semibold text-red-600 dark:text-red-400 mb-4';
     } else {
@@ -228,11 +239,14 @@ export function displayResults(projectionResult) {
     `;
   }
   
-  // Display table (sample every 12 months for performance)
+  // Display table with view toggle
   if (resultsTableBody) {
     resultsTableBody.innerHTML = '';
     
-    const sampleRate = results.length > 120 ? 12 : 1; // Show yearly if > 10 years
+    // Check if monthly view toggle exists, default to yearly for long projections
+    const viewToggle = document.getElementById('viewToggle');
+    const isMonthlyView = viewToggle ? viewToggle.value === 'monthly' : results.length <= 120;
+    const sampleRate = isMonthlyView ? 1 : 12; // 1 = monthly, 12 = yearly
     const sampledResults = results.filter((_, index) => index % sampleRate === 0);
     
     sampledResults.forEach(result => {
