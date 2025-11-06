@@ -64,51 +64,8 @@
         <!-- Main Content -->
         <main class="container mx-auto px-4 py-8">
             
-            <!-- Projection Management -->
-            <div class="card mb-6 no-print">
-                <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                    <div class="flex-1 w-full md:w-auto">
-                        <label for="loadProjectionSelect" class="block text-sm font-medium mb-2">
-                            Manage Projections
-                        </label>
-                        <select 
-                            id="loadProjectionSelect" 
-                            class="form-input"
-                            aria-label="Load saved projection"
-                        >
-                            <option value="">Load a saved projection...</option>
-                        </select>
-                    </div>
-                    <div class="flex gap-2 w-full md:w-auto">
-                        <button 
-                            id="newProjectionBtn" 
-                            class="btn btn-secondary flex-1 md:flex-none"
-                        >
-                            📄 New Projection
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
             <!-- Projection Form -->
             <form id="projectionForm" class="space-y-6">
-                
-                <!-- Hidden ID field -->
-                <input type="hidden" id="currentProjectionId">
-                
-                <!-- Projection Name -->
-                <div class="card">
-                    <label for="projectionName" class="block text-sm font-medium mb-2">
-                        Projection Name
-                    </label>
-                    <input 
-                        type="text" 
-                        id="projectionName" 
-                        class="form-input" 
-                        placeholder="My Financial Projection"
-                        required
-                    >
-                </div>
                 
                 <!-- Core Setup -->
                 <div class="card">
@@ -302,46 +259,32 @@
                 <!-- Future Lump Sum Events -->
                 <div class="card">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-semibold">Future Lump Sum Events (Inflows)</h2>
+                        <h2 class="text-xl font-semibold">Future Lump Sum Events (Inflows/Outflows)</h2>
                         <button 
                             type="button" 
                             id="addLumpSumBtn" 
                             class="btn btn-primary"
                         >
-                            ➕ Add Lump Sum
+                            ➥ Add Lump Sum
                         </button>
                     </div>
                     <div id="lumpSumContainer" class="space-y-3">
                         <!-- Lump sum rows will be added here -->
                     </div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                        Add one-time cash inflows like bonuses, inheritance, or asset sales.
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-3">
+                        Add one-time cash events: positive for inflows (bonuses, inheritance, asset sales) or negative for outflows (major purchases, debt payments, large expenses).
                     </p>
                 </div>
                 
                 <!-- Action Buttons -->
                 <div class="card no-print">
-                    <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex justify-center">
                         <button 
                             type="button" 
                             id="calculateBtn" 
-                            class="btn btn-primary flex-1"
+                            class="btn btn-primary px-8 py-3 text-lg"
                         >
                             🧮 Calculate Financial Projection
-                        </button>
-                        <button 
-                            type="button" 
-                            id="saveProjectionBtn" 
-                            class="btn btn-success flex-1"
-                        >
-                            💾 Save Projection
-                        </button>
-                        <button 
-                            type="button" 
-                            id="deleteProjectionBtn" 
-                            class="btn btn-danger hidden"
-                        >
-                            🗑️ Delete
                         </button>
                     </div>
                 </div>
@@ -395,6 +338,7 @@
                                     <th class="text-right">Net Cash Flow</th>
                                     <th class="text-right">Investment Returns</th>
                                     <th class="text-right">Capital</th>
+                                    <th class="text-left">Remarks</th>
                                 </tr>
                             </thead>
                             <tbody id="resultsTableBody">

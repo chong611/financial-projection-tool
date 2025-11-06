@@ -160,8 +160,6 @@ export function addItemizedRow(name = '', amount = '') {
  */
 export function getFormData() {
   const formData = {
-    id: document.getElementById('currentProjectionId')?.value || '',
-    name: document.getElementById('projectionName')?.value || 'Untitled Projection',
     initialCapital: parseFloat(document.getElementById('initialCapital')?.value) || 0,
     avgYearlyInvestmentReturn: parseFloat(document.getElementById('avgYearlyInvestmentReturn')?.value) || 0,
     currentAge: parseInt(document.getElementById('currentAge')?.value) || 0,

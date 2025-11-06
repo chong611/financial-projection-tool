@@ -246,10 +246,41 @@ export function displayResults(projectionResult) {
     // Check if monthly view toggle exists, default to yearly for long projections
     const viewToggle = document.getElementById('viewToggle');
     const isMonthlyView = viewToggle ? viewToggle.value === 'monthly' : results.length <= 120;
-    const sampleRate = isMonthlyView ? 1 : 12; // 1 = monthly, 12 = yearly
-    const sampledResults = results.filter((_, index) => index % sampleRate === 0);
     
-    sampledResults.forEach(result => {
+    let displayResults;
+    if (isMonthlyView) {
+      // Monthly view: show all months
+      displayResults = results;
+    } else {
+      // Yearly view: aggregate 12 months into annual totals
+      displayResults = [];
+      for (let i = 0; i < results.length; i += 12) {
+        const yearEnd = Math.min(i + 12, results.length);
+        const yearData = results.slice(i, yearEnd);
+        
+        // Sum annual totals
+        const annualIncome = yearData.reduce((sum, m) => sum + m.income, 0);
+        const annualSpending = yearData.reduce((sum, m) => sum + m.spending, 0);
+        const annualNetCashFlow = yearData.reduce((sum, m) => sum + m.netCashFlow, 0);
+        const annualInvestmentReturns = yearData.reduce((sum, m) => sum + m.investmentReturns, 0);
+        
+        // Use the last month's data for date, age, and capital
+        const lastMonth = yearData[yearData.length - 1];
+        
+        displayResults.push({
+          date: lastMonth.date,
+          age: lastMonth.age,
+          income: annualIncome,
+          spending: annualSpending,
+          netCashFlow: annualNetCashFlow,
+          investmentReturns: annualInvestmentReturns,
+          capital: lastMonth.capital,
+          remarks: lastMonth.remarks || ''
+        });
+      }
+    }
+    
+    displayResults.forEach(result => {
       const row = document.createElement('tr');
       row.className = 'border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700';
       row.innerHTML = `
@@ -260,6 +291,7 @@ export function displayResults(projectionResult) {
         <td class="px-4 py-2 text-right ${result.netCashFlow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}">${formatCurrency(result.netCashFlow)}</td>
         <td class="px-4 py-2 text-right">${formatCurrency(result.investmentReturns)}</td>
         <td class="px-4 py-2 text-right font-semibold">${formatCurrency(result.capital)}</td>
+        <td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">${result.remarks || ''}</td>
       `;
       resultsTableBody.appendChild(row);
     });

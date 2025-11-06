@@ -68,13 +68,11 @@ export function runProjection(data) {
     let nextIncomeChangeIndex = 0;
     let nextLumpSumIndex = 0;
     
-    // Track if wealth is perpetual (growing consistently)
-    let consecutiveGrowthMonths = 0;
-    const requiredGrowthMonths = 120; // 10 years of consistent growth = perpetual
+    // Track if wealth is perpetual (will be determined after full calculation)
     let isPerpetualWealth = false;
     
     // Calculate for each month
-    while (projectionMonth < maxMonths && capital >= 0 && !isPerpetualWealth) {
+    while (projectionMonth < maxMonths && capital >= 0) {
       const currentYear = Math.floor(projectionMonth / 12);
       const currentMonthInYear = (projectionMonth % 12) + 1;
       const currentAge = data.currentAge + currentYear;
@@ -84,23 +82,27 @@ export function runProjection(data) {
       const actualYear = startYear + Math.floor((startMonth + projectionMonth - 1) / 12);
       const dateString = `${actualYear}-${String(actualMonth).padStart(2, '0')}`;
       
+      // Track remarks for this month
+      const remarks = [];
+      
       // Apply dynamic spending adjustments
       while (
         nextDynamicSpendingIndex < sortedDynamicSpending.length &&
         sortedDynamicSpending[nextDynamicSpendingIndex].effectiveMonth === projectionMonth
       ) {
         const adjustment = sortedDynamicSpending[nextDynamicSpendingIndex];
-        const percentageChange = adjustment.percentage / 100;
+        const multiplier = 1 + (adjustment.percentage / 100);
         
         if (data.spendingMode === 'itemized') {
           currentSpendingItems = currentSpendingItems.map(item => ({
             ...item,
-            amount: item.amount * (1 + percentageChange)
+            amount: item.amount * multiplier
           }));
         } else {
-          currentTotalMonthlySpending *= (1 + percentageChange);
+          currentTotalMonthlySpending *= multiplier;
         }
         
+        remarks.push(`Spending ${adjustment.percentage > 0 ? '+' : ''}${adjustment.percentage}%`);
         nextDynamicSpendingIndex++;
       }
       
@@ -110,7 +112,10 @@ export function runProjection(data) {
         sortedIncomeChanges[nextIncomeChangeIndex].effectiveMonth === projectionMonth
       ) {
         const change = sortedIncomeChanges[nextIncomeChangeIndex];
+        const oldIncome = currentMonthlyIncome;
         currentMonthlyIncome = change.amount;
+        const diff = change.amount - oldIncome;
+        remarks.push(`Income ${diff >= 0 ? '+' : ''}${(diff/1000).toFixed(1)}k`);
         nextIncomeChangeIndex++;
       }
       
@@ -122,6 +127,7 @@ export function runProjection(data) {
       ) {
         const lumpSum = sortedLumpSums[nextLumpSumIndex];
         lumpSumThisMonth += lumpSum.amount;
+        remarks.push(`Lump sum ${lumpSum.amount >= 0 ? '+' : ''}${(lumpSum.amount/1000).toFixed(0)}k`);
         nextLumpSumIndex++;
       }
       
@@ -163,15 +169,7 @@ export function runProjection(data) {
       const previousCapital = capital;
       capital = capitalBeforeReturns + investmentReturns;
       
-      // Check for perpetual wealth (capital growing consistently)
-      if (capital > previousCapital && netCashFlow + investmentReturns > 0) {
-        consecutiveGrowthMonths++;
-        if (consecutiveGrowthMonths >= requiredGrowthMonths) {
-          isPerpetualWealth = true;
-        }
-      } else {
-        consecutiveGrowthMonths = 0;
-      }
+      // Store previous capital for tracking (perpetual wealth check done after full calculation)
       
       // Store monthly result
       results.push({
@@ -186,7 +184,8 @@ export function runProjection(data) {
         netCashFlow: netCashFlow,
         investmentReturns: investmentReturns,
         capitalBeforeReturns: capitalBeforeReturns,
-        capital: capital
+        capital: capital,
+        remarks: remarks.join('; ')
       });
       
       projectionMonth++;
@@ -198,6 +197,21 @@ export function runProjection(data) {
     }
     
     console.log(`✅ Projection complete: ${results.length} months calculated`);
+    
+    // Check for perpetual wealth ONLY if we calculated full 100 years and capital is still positive
+    if (projectionMonth >= maxMonths && capital > 0) {
+      // Check if capital has been consistently growing in the last 10 years
+      const last10YearsStart = Math.max(0, results.length - 120);
+      const last10Years = results.slice(last10YearsStart);
+      const allPositiveGrowth = last10Years.every((result, index) => {
+        if (index === 0) return true;
+        return result.capital >= last10Years[index - 1].capital;
+      });
+      
+      if (allPositiveGrowth && capital > data.initialCapital * 1.1) {
+        isPerpetualWealth = true;
+      }
+    }
     
     return {
       success: true,
