@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-transition">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional financial projection calculator with Firebase integration">
+    <title>Financial Projection Tool</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/assets/styles/main.css">
+    
+    <!-- Tailwind Dark Mode Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#64748b'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 dark-transition">
+    
+    <!-- Loading Screen -->
+    <div id="loader" class="fixed inset-0 bg-white dark:bg-gray-900 flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="text-lg font-medium">Loading Financial Projection Tool...</p>
+        </div>
+    </div>
+    
+    <!-- Main Application -->
+    <div id="appContent" class="hidden min-h-screen">
+        
+        <!-- Header -->
+        <header class="bg-white dark:bg-gray-800 shadow-md no-print">
+            <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    💰 Financial Projection Tool
+                </h1>
+                <button 
+                    id="themeToggle" 
+                    class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                    aria-label="Toggle dark mode"
+                >
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Main Content -->
+        <main class="container mx-auto px-4 py-8">
+            
+            <!-- Projection Management -->
+            <div class="card mb-6 no-print">
+                <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                    <div class="flex-1 w-full md:w-auto">
+                        <label for="loadProjectionSelect" class="block text-sm font-medium mb-2">
+                            Manage Projections
+                        </label>
+                        <select 
+                            id="loadProjectionSelect" 
+                            class="form-input"
+                            aria-label="Load saved projection"
+                        >
+                            <option value="">Load a saved projection...</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-2 w-full md:w-auto">
+                        <button 
+                            id="newProjectionBtn" 
+                            class="btn btn-secondary flex-1 md:flex-none"
+                        >
+                            📄 New Projection
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Projection Form -->
+            <form id="projectionForm" class="space-y-6">
+                
+                <!-- Hidden ID field -->
+                <input type="hidden" id="currentProjectionId">
+                
+                <!-- Projection Name -->
+                <div class="card">
+                    <label for="projectionName" class="block text-sm font-medium mb-2">
+                        Projection Name
+                    </label>
+                    <input 
+                        type="text" 
+                        id="projectionName" 
+                        class="form-input" 
+                        placeholder="My Financial Projection"
+                        required
+                    >
+                </div>
+                
+                <!-- Core Setup -->
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-4">Core Setup</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label for="initialCapital" class="block text-sm font-medium mb-2">
+                                Initial Capital (MYR)
+                            </label>
+                            <input 
+                                type="number" 
+                                id="initialCapital" 
+                                class="form-input" 
+                                step="1000"
+                                placeholder="2000000"
+                                required
+                            >
+                        </div>
+                        <div>
+                            <label for="currentAge" class="block text-sm font-medium mb-2">
+                                Current Age
+                            </label>
+                            <input 
+                                type="number" 
+                                id="currentAge" 
+                                class="form-input" 
+                                min="0"
+                                max="150"
+                                placeholder="30"
+                                required
+                            >
+                        </div>
+                        <div>
+                            <label for="avgYearlyInvestmentReturn" class="block text-sm font-medium mb-2">
+                                Avg. Yearly Investment Return (%)
+                            </label>
+                            <input 
+                                type="number" 
+                                id="avgYearlyInvestmentReturn" 
+                                class="form-input" 
+                                step="0.1"
+                                placeholder="5.0"
+                                required
+                            >
+                        </div>
+                        <div>
+                            <label for="annualInflationRate" class="block text-sm font-medium mb-2">
+                                Annual Inflation Rate (%)
+                            </label>
+                            <input 
+                                type="number" 
+                                id="annualInflationRate" 
+                                class="form-input" 
+                                step="0.1"
+                                placeholder="3.0"
+                                required
+                            >
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="projectionStartDate" class="block text-sm font-medium mb-2">
+                            Projection Start Date
+                        </label>
+                        <input 
+                            type="date" 
+                            id="projectionStartDate" 
+                            class="form-input max-w-xs"
+                            required
+                        >
+                    </div>
+                </div>
+                
+                <!-- Initial Monthly Income -->
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-4">Initial Monthly Income</h2>
+                    <div>
+                        <label for="initialMonthlyIncome" class="block text-sm font-medium mb-2">
+                            Initial Monthly Income (MYR)
+                        </label>
+                        <input 
+                            type="number" 
+                            id="initialMonthlyIncome" 
+                            class="form-input max-w-xs" 
+                            step="100"
+                            placeholder="5000"
+                            required
+                        >
+                    </div>
+                </div>
+                
+                <!-- Monthly Spending Setup -->
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-4">Monthly Spending Setup</h2>
+                    
+                    <!-- Spending Mode Selection -->
+                    <div class="mb-4">
+                        <div class="flex gap-6">
+                            <label class="flex items-center cursor-pointer">
+                                <input 
+                                    type="radio" 
+                                    name="spendingMode" 
+                                    value="single" 
+                                    id="spendingModeSingle"
+                                    class="mr-2"
+                                    checked
+                                >
+                                <span>Single Total Amount</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input 
+                                    type="radio" 
+                                    name="spendingMode" 
+                                    value="itemized" 
+                                    id="spendingModeItemized"
+                                    class="mr-2"
+                                >
+                                <span>Itemized Breakdown</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Single Spending Card -->
+                    <div id="singleSpendingCard">
+                        <label for="totalMonthlySpending" class="block text-sm font-medium mb-2">
+                            Total Monthly Spending (MYR)
+                        </label>
+                        <input 
+                            type="number" 
+                            id="totalMonthlySpending" 
+                            class="form-input max-w-xs" 
+                            step="100"
+                            placeholder="5000"
+                        >
+                    </div>
+                    
+                    <!-- Itemized Spending Card -->
+                    <div id="itemizedSpendingCard" class="hidden">
+                        <div id="itemizedSpendingContainer" class="space-y-3 mb-4">
+                            <!-- Dynamic itemized spending rows will be added here -->
+                        </div>
+                        <button 
+                            type="button" 
+                            id="addItemizedSpendingBtn" 
+                            class="btn btn-primary"
+                        >
+                            ➕ Add Category
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Dynamic Spending Adjustments -->
+                <div class="card">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold">Dynamic Spending Adjustments</h2>
+                        <button 
+                            type="button" 
+                            id="addDynamicSpendingBtn" 
+                            class="btn btn-primary"
+                        >
+                            ➕ Add Adjustment
+                        </button>
+                    </div>
+                    <div id="dynamicSpendingContainer" class="space-y-3">
+                        <!-- Dynamic spending adjustment rows will be added here -->
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                        Add percentage-based changes to your spending at specific points in time.
+                    </p>
+                </div>
+                
+                <!-- Monthly Income Changes -->
+                <div class="card">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold">Monthly Income Changes</h2>
+                        <button 
+                            type="button" 
+                            id="addIncomeChangeBtn" 
+                            class="btn btn-primary"
+                        >
+                            ➕ Add Income Change
+                        </button>
+                    </div>
+                    <div id="incomeChangesContainer" class="space-y-3">
+                        <!-- Income change rows will be added here -->
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                        Schedule changes to your monthly income over time.
+                    </p>
+                </div>
+                
+                <!-- Future Lump Sum Events -->
+                <div class="card">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold">Future Lump Sum Events (Inflows)</h2>
+                        <button 
+                            type="button" 
+                            id="addLumpSumBtn" 
+                            class="btn btn-primary"
+                        >
+                            ➕ Add Lump Sum
+                        </button>
+                    </div>
+                    <div id="lumpSumContainer" class="space-y-3">
+                        <!-- Lump sum rows will be added here -->
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                        Add one-time cash inflows like bonuses, inheritance, or asset sales.
+                    </p>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="card no-print">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <button 
+                            type="button" 
+                            id="calculateBtn" 
+                            class="btn btn-primary flex-1"
+                        >
+                            🧮 Calculate Financial Projection
+                        </button>
+                        <button 
+                            type="button" 
+                            id="saveProjectionBtn" 
+                            class="btn btn-success flex-1"
+                        >
+                            💾 Save Projection
+                        </button>
+                        <button 
+                            type="button" 
+                            id="deleteProjectionBtn" 
+                            class="btn btn-danger hidden"
+                        >
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
+                
+            </form>
+            
+            <!-- Results Section -->
+            <div id="resultsSection" class="hidden space-y-6 mt-8">
+                
+                <div class="card">
+                    <h2 class="text-2xl font-bold mb-4">📊 Projection Results</h2>
+                    <p id="resultsMessage" class="text-lg font-semibold mb-4"></p>
+                    
+                    <!-- Metrics -->
+                    <div id="metricsContainer"></div>
+                    
+                    <!-- Chart -->
+                    <div id="chartContainer" class="mb-6">
+                        <canvas id="projectionChart"></canvas>
+                    </div>
+                    
+                    <!-- Download Button -->
+                    <div class="mb-6 no-print">
+                        <button 
+                            id="downloadCsvBtn" 
+                            class="btn btn-success"
+                        >
+                            📥 Download CSV
+                        </button>
+                    </div>
+                    
+                    <!-- Results Table -->
+                    <div class="overflow-x-auto">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th class="text-center">Age</th>
+                                    <th class="text-right">Income</th>
+                                    <th class="text-right">Spending</th>
+                                    <th class="text-right">Net Cash Flow</th>
+                                    <th class="text-right">Investment Returns</th>
+                                    <th class="text-right">Capital</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsTableBody">
+                                <!-- Results will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+            </div>
+            
+        </main>
+        
+        <!-- Footer -->
+        <footer class="bg-white dark:bg-gray-800 shadow-md mt-12 no-print">
+            <div class="container mx-auto px-4 py-6 text-center text-sm text-gray-600 dark:text-gray-400">
+                <p>Financial Projection Tool &copy; 2025 | Built with ❤️ using Firebase, Chart.js & Tailwind CSS</p>
+            </div>
+        </footer>
+        
+    </div>
+    
+    <!-- Modal -->
+    <div id="modal" class="hidden fixed inset-0 z-50 items-center justify-center p-4">
+        <div class="modal-backdrop" onclick="document.getElementById('modalCancelBtn').click()"></div>
+        <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6 z-50 fade-in">
+            <h3 id="modalTitle" class="text-xl font-bold mb-4"></h3>
+            <p id="modalMessage" class="text-gray-700 dark:text-gray-300 mb-6"></p>
+            <div class="flex gap-3 justify-end">
+                <button 
+                    id="modalCancelBtn" 
+                    class="btn btn-secondary"
+                >
+                    Cancel
+                </button>
+                <button 
+                    id="modalConfirmBtn" 
+                    class="btn btn-primary"
+                >
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Application Script -->
+    <script type="module" src="/src/js/main.js"></script>
+    
+</body>
+</html>
