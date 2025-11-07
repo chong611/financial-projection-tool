@@ -1,37 +1,18 @@
 {
   "name": "financial-projection-tool",
-  "version": "2.0.1",
-  "description": "Professional financial projection calculator with Firebase integration",
+  "version": "3.0.0",
+  "description": "Professional Financial Projection Calculator - Standalone Version",
+  "main": "server/server.js",
   "type": "module",
-  "main": "server/index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "start": "node server/index.js",
-    "railway:build": "npm run build",
-    "railway:start": "npm run start"
+    "start": "node server/server.js",
+    "build": "echo 'No build needed - using standalone HTML'",
+    "dev": "node server/server.js"
   },
-  "keywords": [
-    "financial",
-    "projection",
-    "calculator",
-    "firebase"
-  ],
+  "keywords": ["finance", "projection", "calculator"],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "compression": "^1.7.4",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "helmet": "^7.1.0"
-  },
-  "devDependencies": {
-    "terser": "^5.44.1",
-    "vite": "^5.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "express": "^4.18.2"
   }
 }

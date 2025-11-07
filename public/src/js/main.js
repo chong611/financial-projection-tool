@@ -32,6 +32,7 @@ let currentProjectionResults = null;
 async function initializeApp() {
   try {
     console.log('🚀 Initializing Financial Projection Tool...');
+    console.log('DEBUG: initializeApp called');
     
     // Show loading
     showLoading();
@@ -40,7 +41,9 @@ async function initializeApp() {
     initializeDarkMode();
     
     // Setup event listeners
+    console.log('DEBUG: About to setup event listeners');
     setupEventListeners();
+    console.log('DEBUG: Event listeners setup complete');
     
     // Hide loading and show app
     hideLoading();
@@ -58,6 +61,7 @@ async function initializeApp() {
  * Setup all event listeners
  */
 function setupEventListeners() {
+  console.log('DEBUG: setupEventListeners function called');
   // Dark mode toggle
   const darkModeToggle = document.getElementById('darkModeToggle');
   if (darkModeToggle) {
@@ -110,7 +114,9 @@ function setupEventListeners() {
   }
   
   // Calculate button
+  console.log('DEBUG: Looking for calculateBtn');
   const calculateBtn = document.getElementById('calculateBtn');
+  console.log('DEBUG: calculateBtn found:', !!calculateBtn);
   if (calculateBtn) {
     calculateBtn.addEventListener('click', handleCalculate);
   }

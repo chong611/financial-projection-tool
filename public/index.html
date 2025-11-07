@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" class="dark-transition">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Professional financial projection calculator with Firebase integration">
     <title>Financial Projection Tool</title>
     
     <!-- Tailwind CSS -->
@@ -12,10 +11,27 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
-    <!-- Custom Styles -->
-    <link rel="stylesheet" href="/assets/styles/main.css">
+    <style>
+        .dark-transition {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .dark body {
+            background-color: #1f2937;
+            color: #f3f4f6;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            ring: 2px;
+            ring-color: #3b82f6;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
     
-    <!-- Tailwind Dark Mode Configuration -->
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -30,362 +46,874 @@
         }
     </script>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 dark-transition">
+<body class="bg-gray-50 dark:bg-gray-900 dark-transition min-h-screen">
     
-    <!-- Loading Screen -->
-    <div id="loader" class="fixed inset-0 bg-white dark:bg-gray-900 flex items-center justify-center z-50">
-        <div class="text-center">
-            <div class="spinner mx-auto mb-4"></div>
-            <p class="text-lg font-medium">Loading Financial Projection Tool...</p>
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-md dark-transition">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-primary">💰 Financial Projection Tool</h1>
+            <button id="darkModeToggle" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" aria-label="Toggle dark mode">
+                🌙
+            </button>
         </div>
-    </div>
+    </header>
     
-    <!-- Main Application -->
-    <div id="appContent" class="hidden min-h-screen">
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
         
-        <!-- Header -->
-        <header class="bg-white dark:bg-gray-800 shadow-md no-print">
-            <div class="container mx-auto px-4 py-4 flex items-center justify-between">
-                <h1 class="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                    💰 Financial Projection Tool
-                </h1>
-                <button 
-                    id="themeToggle" 
-                    class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                    aria-label="Toggle dark mode"
-                >
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
-                    </svg>
+        <!-- Core Setup -->
+        <section class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 dark-transition">
+            <h2 class="text-xl font-semibold mb-4">Core Setup</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Initial Capital (MYR)</label>
+                    <input type="number" id="initialCapital" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white" placeholder="2000000" value="2000000">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Current Age</label>
+                    <input type="number" id="currentAge" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white" placeholder="30" value="30">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Avg. Yearly Investment Return (%)</label>
+                    <input type="number" step="0.1" id="avgYearlyInvestmentReturn" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white" placeholder="5.0" value="5.0">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Annual Inflation Rate (%)</label>
+                    <input type="number" step="0.1" id="annualInflationRate" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white" placeholder="3.0" value="3.0">
+                </div>
+            </div>
+            <div class="mt-4">
+                <label class="block text-sm font-medium mb-1">Projection Start Date</label>
+                <input type="date" id="projectionStartDate" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+            </div>
+        </section>
+        
+        <!-- Initial Monthly Income -->
+        <section class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 dark-transition">
+            <h2 class="text-xl font-semibold mb-4">Initial Monthly Income</h2>
+            <div>
+                <label class="block text-sm font-medium mb-1">Initial Monthly Income (MYR)</label>
+                <input type="number" id="initialMonthlyIncome" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white" placeholder="5000" value="5000">
+            </div>
+        </section>
+        
+        <!-- Monthly Spending Setup -->
+        <section class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 dark-transition">
+            <h2 class="text-xl font-semibold mb-4">Monthly Spending Setup</h2>
+            
+            <div class="flex gap-4 mb-4">
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="spendingMode" value="single" class="mr-2" checked>
+                    <span>💵 Single Total Amount</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="spendingMode" value="itemized" class="mr-2">
+                    <span>📊 Itemized Breakdown</span>
+                </label>
+            </div>
+            
+            <div id="singleSpendingCard">
+                <label class="block text-sm font-medium mb-1">Total Monthly Spending (MYR)</label>
+                <input type="number" id="totalMonthlySpending" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white" placeholder="5000" value="5000">
+            </div>
+            
+            <div id="itemizedSpendingCard" class="hidden">
+                <div id="itemizedSpendingContainer"></div>
+                <button id="addCategoryBtn" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">➕ Add Category</button>
+            </div>
+        </section>
+        
+        <!-- Dynamic Spending Adjustments -->
+        <section class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 dark-transition">
+            <h2 class="text-xl font-semibold mb-4">Dynamic Spending Adjustments</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Add percentage-based changes to your spending at specific points in time.</p>
+            <div id="dynamicSpendingContainer"></div>
+            <button id="addAdjustmentBtn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">➕ Add Adjustment</button>
+        </section>
+        
+        <!-- Monthly Income Changes -->
+        <section class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 dark-transition">
+            <h2 class="text-xl font-semibold mb-4">Monthly Income Changes</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Schedule changes to your monthly income over time.</p>
+            <div id="incomeChangesContainer"></div>
+            <button id="addIncomeChangeBtn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">➕ Add Income Change</button>
+        </section>
+        
+        <!-- Future Lump Sum Events -->
+        <section class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 dark-transition">
+            <h2 class="text-xl font-semibold mb-4">Future Lump Sum Events (Inflows/Outflows)</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Add one-time cash events: positive for inflows (bonuses, inheritance, asset sales) or negative for outflows (major purchases, debt payments, large expenses).</p>
+            <div id="lumpSumContainer"></div>
+            <button id="addLumpSumBtn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">➥ Add Lump Sum</button>
+        </section>
+        
+        <!-- Calculate Button -->
+        <div class="text-center mb-6">
+            <button id="calculateBtn" class="px-8 py-4 bg-green-500 text-white text-lg font-semibold rounded-lg hover:bg-green-600 shadow-lg">
+                🧮 Calculate Financial Projection
+            </button>
+        </div>
+        
+        <!-- Results Section -->
+        <section id="resultsSection" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 dark-transition">
+            <h2 class="text-xl font-semibold mb-4">Projection Results</h2>
+            
+            <div id="resultsSummary" class="mb-6"></div>
+            
+            <div class="mb-6">
+                <canvas id="projectionChart"></canvas>
+            </div>
+            
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <label class="text-sm font-medium mr-2">View:</label>
+                    <select id="viewToggle" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                        <option value="yearly">Yearly Breakdown</option>
+                        <option value="monthly">Monthly Breakdown</option>
+                    </select>
+                </div>
+                <button id="downloadCsvBtn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                    📥 Download CSV
                 </button>
             </div>
-        </header>
-        
-        <!-- Main Content -->
-        <main class="container mx-auto px-4 py-8">
             
-            <!-- Projection Form -->
-            <form id="projectionForm" class="space-y-6">
-                
-                <!-- Core Setup -->
-                <div class="card">
-                    <h2 class="text-xl font-semibold mb-4">Core Setup</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div>
-                            <label for="initialCapital" class="block text-sm font-medium mb-2">
-                                Initial Capital (MYR)
-                            </label>
-                            <input 
-                                type="number" 
-                                id="initialCapital" 
-                                class="form-input" 
-                                step="1000"
-                                placeholder="2000000"
-                                required
-                            >
-                        </div>
-                        <div>
-                            <label for="currentAge" class="block text-sm font-medium mb-2">
-                                Current Age
-                            </label>
-                            <input 
-                                type="number" 
-                                id="currentAge" 
-                                class="form-input" 
-                                min="0"
-                                max="150"
-                                placeholder="30"
-                                required
-                            >
-                        </div>
-                        <div>
-                            <label for="avgYearlyInvestmentReturn" class="block text-sm font-medium mb-2">
-                                Avg. Yearly Investment Return (%)
-                            </label>
-                            <input 
-                                type="number" 
-                                id="avgYearlyInvestmentReturn" 
-                                class="form-input" 
-                                step="0.1"
-                                placeholder="5.0"
-                                required
-                            >
-                        </div>
-                        <div>
-                            <label for="annualInflationRate" class="block text-sm font-medium mb-2">
-                                Annual Inflation Rate (%)
-                            </label>
-                            <input 
-                                type="number" 
-                                id="annualInflationRate" 
-                                class="form-input" 
-                                step="0.1"
-                                placeholder="3.0"
-                                required
-                            >
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <label for="projectionStartDate" class="block text-sm font-medium mb-2">
-                            Projection Start Date
-                        </label>
-                        <input 
-                            type="date" 
-                            id="projectionStartDate" 
-                            class="form-input max-w-xs"
-                            required
-                        >
-                    </div>
-                </div>
-                
-                <!-- Initial Monthly Income -->
-                <div class="card">
-                    <h2 class="text-xl font-semibold mb-4">Initial Monthly Income</h2>
+            <div class="overflow-x-auto">
+                <table id="resultsTable" class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 dark:bg-gray-700">
+                            <th class="border border-gray-300 dark:border-gray-600 px-4 py-2">Date</th>
+                            <th class="border border-gray-300 dark:border-gray-600 px-4 py-2">Age</th>
+                            <th class="border border-gray-300 dark:border-gray-600 px-4 py-2">Income</th>
+                            <th class="border border-gray-300 dark:border-gray-600 px-4 py-2">Spending</th>
+                            <th class="border border-gray-300 dark:border-gray-600 px-4 py-2">Net Cash Flow</th>
+                            <th class="border border-gray-300 dark:border-gray-600 px-4 py-2">Investment Returns</th>
+                            <th class="border border-gray-300 dark:border-gray-600 px-4 py-2">Capital</th>
+                            <th class="border border-gray-300 dark:border-gray-600 px-4 py-2">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+    </main>
+    
+    <script>
+        // Global state
+        let currentResults = null;
+        let chartInstance = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Financial Projection Tool initialized');
+            
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('projectionStartDate').value = today;
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Initialize dark mode
+            initializeDarkMode();
+        });
+        
+        function setupEventListeners() {
+            // Dark mode toggle
+            document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+            
+            // Spending mode toggle
+            document.querySelectorAll('input[name="spendingMode"]').forEach(radio => {
+                radio.addEventListener('change', (e) => toggleSpendingMode(e.target.value));
+            });
+            
+            // Add buttons
+            document.getElementById('addCategoryBtn').addEventListener('click', addItemizedRow);
+            document.getElementById('addAdjustmentBtn').addEventListener('click', () => addDynamicRow('dynamicSpending'));
+            document.getElementById('addIncomeChangeBtn').addEventListener('click', () => addDynamicRow('incomeChange'));
+            document.getElementById('addLumpSumBtn').addEventListener('click', () => addDynamicRow('lumpSum'));
+            
+            // Calculate button
+            document.getElementById('calculateBtn').addEventListener('click', handleCalculate);
+            
+            // Download CSV button
+            document.getElementById('downloadCsvBtn').addEventListener('click', handleDownloadCSV);
+            
+            // View toggle
+            document.getElementById('viewToggle').addEventListener('change', () => {
+                if (currentResults) {
+                    displayResults(currentResults);
+                }
+            });
+        }
+        
+        function initializeDarkMode() {
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('darkModeToggle').textContent = '☀️';
+            }
+        }
+        
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', isDark);
+            document.getElementById('darkModeToggle').textContent = isDark ? '☀️' : '🌙';
+            
+            if (chartInstance) {
+                updateChartTheme(isDark);
+            }
+        }
+        
+        function toggleSpendingMode(mode) {
+            const singleCard = document.getElementById('singleSpendingCard');
+            const itemizedCard = document.getElementById('itemizedSpendingCard');
+            
+            if (mode === 'single') {
+                singleCard.classList.remove('hidden');
+                itemizedCard.classList.add('hidden');
+            } else {
+                singleCard.classList.add('hidden');
+                itemizedCard.classList.remove('hidden');
+            }
+        }
+        
+        function addItemizedRow() {
+            const container = document.getElementById('itemizedSpendingContainer');
+            const row = document.createElement('div');
+            row.className = 'dynamic-row mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600';
+            row.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label for="initialMonthlyIncome" class="block text-sm font-medium mb-2">
-                            Initial Monthly Income (MYR)
-                        </label>
-                        <input 
-                            type="number" 
-                            id="initialMonthlyIncome" 
-                            class="form-input max-w-xs" 
-                            step="100"
-                            placeholder="5000"
-                            required
-                        >
+                        <label class="block text-sm font-medium mb-1">Category Name</label>
+                        <input type="text" class="itemized-name w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white" placeholder="e.g., Housing">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Monthly Amount (MYR)</label>
+                        <input type="number" class="itemized-amount w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white" placeholder="3000">
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Remove</button>
                     </div>
                 </div>
-                
-                <!-- Monthly Spending Setup -->
-                <div class="card">
-                    <h2 class="text-xl font-semibold mb-4">Monthly Spending Setup</h2>
-                    
-                    <!-- Spending Mode Selection -->
-                    <div class="mb-4">
-                        <div class="flex gap-6">
-                            <label class="flex items-center cursor-pointer">
-                                <input 
-                                    type="radio" 
-                                    name="spendingMode" 
-                                    value="single" 
-                                    id="spendingModeSingle"
-                                    class="mr-2"
-                                    checked
-                                >
-                                <span>Single Total Amount</span>
-                            </label>
-                            <label class="flex items-center cursor-pointer">
-                                <input 
-                                    type="radio" 
-                                    name="spendingMode" 
-                                    value="itemized" 
-                                    id="spendingModeItemized"
-                                    class="mr-2"
-                                >
-                                <span>Itemized Breakdown</span>
-                            </label>
+            `;
+            container.appendChild(row);
+        }
+        
+        function addDynamicRow(type) {
+            let container, html;
+            
+            if (type === 'dynamicSpending') {
+                container = document.getElementById('dynamicSpendingContainer');
+                html = `
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Percentage Change (%)</label>
+                            <input type="number" step="0.1" class="adjustment-percentage w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white" placeholder="10">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Year</label>
+                            <input type="number" class="adjustment-year w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white" placeholder="5">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Month (1-12)</label>
+                            <input type="number" min="1" max="12" class="adjustment-month w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white" placeholder="1">
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="this.parentElement.parentElement.parentElement.remove()" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Remove</button>
                         </div>
                     </div>
-                    
-                    <!-- Single Spending Card -->
-                    <div id="singleSpendingCard">
-                        <label for="totalMonthlySpending" class="block text-sm font-medium mb-2">
-                            Total Monthly Spending (MYR)
-                        </label>
-                        <input 
-                            type="number" 
-                            id="totalMonthlySpending" 
-                            class="form-input max-w-xs" 
-                            step="100"
-                            placeholder="5000"
-                        >
-                    </div>
-                    
-                    <!-- Itemized Spending Card -->
-                    <div id="itemizedSpendingCard" class="hidden">
-                        <div id="itemizedSpendingContainer" class="space-y-3 mb-4">
-                            <!-- Dynamic itemized spending rows will be added here -->
+                `;
+            } else if (type === 'incomeChange') {
+                container = document.getElementById('incomeChangesContainer');
+                html = `
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">New Monthly Income (MYR)</label>
+                            <input type="number" class="income-amount w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white" placeholder="8000">
                         </div>
-                        <button 
-                            type="button" 
-                            id="addItemizedSpendingBtn" 
-                            class="btn btn-primary"
-                        >
-                            ➕ Add Category
-                        </button>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Year</label>
+                            <input type="number" class="income-year w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white" placeholder="3">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Month (1-12)</label>
+                            <input type="number" min="1" max="12" class="income-month w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white" placeholder="1">
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="this.parentElement.parentElement.parentElement.remove()" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Remove</button>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- Dynamic Spending Adjustments -->
-                <div class="card">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-semibold">Dynamic Spending Adjustments</h2>
-                        <button 
-                            type="button" 
-                            id="addDynamicSpendingBtn" 
-                            class="btn btn-primary"
-                        >
-                            ➕ Add Adjustment
-                        </button>
+                `;
+            } else if (type === 'lumpSum') {
+                container = document.getElementById('lumpSumContainer');
+                html = `
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Amount (MYR, +/- allowed)</label>
+                            <input type="number" class="lumpsum-amount w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white" placeholder="50000">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Year</label>
+                            <input type="number" class="lumpsum-year w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white" placeholder="10">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Month (1-12)</label>
+                            <input type="number" min="1" max="12" class="lumpsum-month w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white" placeholder="6">
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="this.parentElement.parentElement.parentElement.remove()" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Remove</button>
+                        </div>
                     </div>
-                    <div id="dynamicSpendingContainer" class="space-y-3">
-                        <!-- Dynamic spending adjustment rows will be added here -->
-                    </div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                        Add percentage-based changes to your spending at specific points in time.
-                    </p>
-                </div>
-                
-                <!-- Monthly Income Changes -->
-                <div class="card">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-semibold">Monthly Income Changes</h2>
-                        <button 
-                            type="button" 
-                            id="addIncomeChangeBtn" 
-                            class="btn btn-primary"
-                        >
-                            ➕ Add Income Change
-                        </button>
-                    </div>
-                    <div id="incomeChangesContainer" class="space-y-3">
-                        <!-- Income change rows will be added here -->
-                    </div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                        Schedule changes to your monthly income over time.
-                    </p>
-                </div>
-                
-                <!-- Future Lump Sum Events -->
-                <div class="card">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-semibold">Future Lump Sum Events (Inflows/Outflows)</h2>
-                        <button 
-                            type="button" 
-                            id="addLumpSumBtn" 
-                            class="btn btn-primary"
-                        >
-                            ➥ Add Lump Sum
-                        </button>
-                    </div>
-                    <div id="lumpSumContainer" class="space-y-3">
-                        <!-- Lump sum rows will be added here -->
-                    </div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-3">
-                        Add one-time cash events: positive for inflows (bonuses, inheritance, asset sales) or negative for outflows (major purchases, debt payments, large expenses).
-                    </p>
-                </div>
-                
-                <!-- Action Buttons -->
-                <div class="card no-print">
-                    <div class="flex justify-center">
-                        <button 
-                            type="button" 
-                            id="calculateBtn" 
-                            class="btn btn-primary px-8 py-3 text-lg"
-                        >
-                            🧮 Calculate Financial Projection
-                        </button>
-                    </div>
-                </div>
-                
-            </form>
+                `;
+            }
             
-            <!-- Results Section -->
-            <div id="resultsSection" class="hidden space-y-6 mt-8">
+            const row = document.createElement('div');
+            row.className = 'dynamic-row mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600';
+            row.innerHTML = html;
+            container.appendChild(row);
+        }
+        
+        function getFormData() {
+            const data = {
+                initialCapital: parseFloat(document.getElementById('initialCapital').value) || 0,
+                currentAge: parseInt(document.getElementById('currentAge').value) || 0,
+                avgYearlyInvestmentReturn: parseFloat(document.getElementById('avgYearlyInvestmentReturn').value) || 0,
+                annualInflationRate: parseFloat(document.getElementById('annualInflationRate').value) || 0,
+                projectionStartDate: document.getElementById('projectionStartDate').value,
+                initialMonthlyIncome: parseFloat(document.getElementById('initialMonthlyIncome').value) || 0,
+                spendingMode: document.querySelector('input[name="spendingMode"]:checked').value,
+                totalMonthlySpending: parseFloat(document.getElementById('totalMonthlySpending').value) || 0,
+                itemizedSpending: [],
+                dynamicSpending: [],
+                incomeChanges: [],
+                lumpSums: []
+            };
+            
+            // Get itemized spending
+            document.querySelectorAll('#itemizedSpendingContainer .dynamic-row').forEach(row => {
+                const name = row.querySelector('.itemized-name').value;
+                const amount = parseFloat(row.querySelector('.itemized-amount').value);
+                if (name && amount) {
+                    data.itemizedSpending.push({ name, amount });
+                }
+            });
+            
+            // Get dynamic spending adjustments
+            document.querySelectorAll('#dynamicSpendingContainer .dynamic-row').forEach(row => {
+                const percentage = parseFloat(row.querySelector('.adjustment-percentage').value);
+                const year = parseInt(row.querySelector('.adjustment-year').value);
+                const month = parseInt(row.querySelector('.adjustment-month').value);
+                if (!isNaN(percentage) && !isNaN(year) && !isNaN(month)) {
+                    data.dynamicSpending.push({ percentage, year, month });
+                }
+            });
+            
+            // Get income changes
+            document.querySelectorAll('#incomeChangesContainer .dynamic-row').forEach(row => {
+                const amount = parseFloat(row.querySelector('.income-amount').value);
+                const year = parseInt(row.querySelector('.income-year').value);
+                const month = parseInt(row.querySelector('.income-month').value);
+                if (!isNaN(amount) && !isNaN(year) && !isNaN(month)) {
+                    data.incomeChanges.push({ amount, year, month });
+                }
+            });
+            
+            // Get lump sums
+            document.querySelectorAll('#lumpSumContainer .dynamic-row').forEach(row => {
+                const amount = parseFloat(row.querySelector('.lumpsum-amount').value);
+                const year = parseInt(row.querySelector('.lumpsum-year').value);
+                const month = parseInt(row.querySelector('.lumpsum-month').value);
+                if (!isNaN(amount) && !isNaN(year) && !isNaN(month)) {
+                    data.lumpSums.push({ amount, year, month });
+                }
+            });
+            
+            return data;
+        }
+        
+        function handleCalculate() {
+            console.log('🧮 Calculate button clicked');
+            
+            const formData = getFormData();
+            console.log('📊 Form data:', formData);
+            
+            try {
+                const result = runProjection(formData);
                 
-                <div class="card">
-                    <h2 class="text-2xl font-bold mb-4">📊 Projection Results</h2>
-                    <p id="resultsMessage" class="text-lg font-semibold mb-4"></p>
+                if (result.success) {
+                    currentResults = result;
+                    displayResults(result);
                     
-                    <!-- Metrics -->
-                    <div id="metricsContainer"></div>
+                    let message = '✅ Projection calculated successfully!';
+                    if (result.unappliedEvents && result.unappliedEvents.length > 0) {
+                        message += '\n\n⚠️ Note: The following scheduled events could not be applied because the projection ended early:\n\n';
+                        result.unappliedEvents.forEach(evt => {
+                            message += `• ${evt.type}: ${evt.description} (scheduled for Year ${evt.scheduledYear}, Month ${evt.scheduledMonth})\n`;
+                        });
+                    }
+                    alert(message);
+                } else {
+                    alert('❌ Calculation error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('❌ Calculation error:', error);
+                alert('❌ Calculation error: ' + error.message);
+            }
+        }
+        
+        function runProjection(data) {
+            console.log('🧮 Running projection...');
+            
+            try {
+                const results = [];
+                let capital = data.initialCapital;
+                let itemizedCategories = [];
+                let totalSpending = 0;
+                
+                if (data.spendingMode === 'itemized') {
+                    itemizedCategories = JSON.parse(JSON.stringify(data.itemizedSpending));
+                } else {
+                    totalSpending = data.totalMonthlySpending;
+                }
+                
+                let currentIncome = data.initialMonthlyIncome;
+                const monthlyReturn = data.avgYearlyInvestmentReturn / 100 / 12;
+                const annualInflation = data.annualInflationRate / 100;
+                
+                const startDate = new Date(data.projectionStartDate);
+                const startYear = startDate.getFullYear();
+                const startMonth = startDate.getMonth() + 1;
+                
+                let month = 0;
+                const maxMonths = 1200; // 100 years
+                
+                // Prepare events
+                const adjustments = (data.dynamicSpending || []).map(e => ({
+                    ...e,
+                    effectiveMonth: e.year * 12 + (e.month - 1)
+                })).sort((a, b) => a.effectiveMonth - b.effectiveMonth);
+                
+                const incomeChanges = (data.incomeChanges || []).map(e => ({
+                    ...e,
+                    effectiveMonth: e.year * 12 + (e.month - 1)
+                })).sort((a, b) => a.effectiveMonth - b.effectiveMonth);
+                
+                const lumpSums = (data.lumpSums || []).map(e => ({
+                    ...e,
+                    effectiveMonth: e.year * 12 + (e.month - 1)
+                })).sort((a, b) => a.effectiveMonth - b.effectiveMonth);
+                
+                let adjIndex = 0, incIndex = 0, lumpIndex = 0;
+                let isPerpetual = false;
+                const unappliedEvents = [];
+                
+                while (month < maxMonths && capital >= 0) {
+                    const year = Math.floor(month / 12);
+                    const monthInYear = (month % 12) + 1;
+                    const age = data.currentAge + year;
+                    const calendarMonth = (startMonth + month - 1) % 12 + 1;
+                    const calendarYear = startYear + Math.floor((startMonth + month - 1) / 12);
+                    const dateStr = `${calendarYear}-${String(calendarMonth).padStart(2, '0')}`;
                     
-                    <!-- Chart -->
-                    <div id="chartContainer" class="mb-6">
-                        <canvas id="projectionChart"></canvas>
+                    const remarks = [];
+                    
+                    // Apply spending adjustments
+                    while (adjIndex < adjustments.length && adjustments[adjIndex].effectiveMonth === month) {
+                        const adj = adjustments[adjIndex];
+                        const multiplier = 1 + (adj.percentage / 100);
+                        
+                        if (data.spendingMode === 'itemized') {
+                            itemizedCategories = itemizedCategories.map(c => ({
+                                ...c,
+                                amount: c.amount * multiplier
+                            }));
+                        } else {
+                            totalSpending *= multiplier;
+                        }
+                        
+                        remarks.push(`Spending ${adj.percentage > 0 ? '+' : ''}${adj.percentage}%`);
+                        adjIndex++;
+                    }
+                    
+                    // Apply income changes
+                    while (incIndex < incomeChanges.length && incomeChanges[incIndex].effectiveMonth === month) {
+                        const inc = incomeChanges[incIndex];
+                        const oldIncome = currentIncome;
+                        currentIncome = inc.amount;
+                        const change = inc.amount - oldIncome;
+                        remarks.push(`Income ${change >= 0 ? '+' : ''}${(change / 1000).toFixed(1)}k`);
+                        incIndex++;
+                    }
+                    
+                    // Apply lump sums
+                    let lumpSum = 0;
+                    while (lumpIndex < lumpSums.length && lumpSums[lumpIndex].effectiveMonth === month) {
+                        const ls = lumpSums[lumpIndex];
+                        lumpSum += ls.amount;
+                        remarks.push(`Lump sum ${ls.amount >= 0 ? '+' : ''}${(ls.amount / 1000).toFixed(0)}k`);
+                        lumpIndex++;
+                    }
+                    
+                    // Calculate spending
+                    let spending = 0;
+                    if (data.spendingMode === 'itemized') {
+                        spending = itemizedCategories.reduce((sum, c) => sum + c.amount, 0);
+                    } else {
+                        spending = totalSpending;
+                    }
+                    
+                    // Apply annual inflation
+                    if (monthInYear === 1 && year > 0) {
+                        if (data.spendingMode === 'itemized') {
+                            itemizedCategories = itemizedCategories.map(c => ({
+                                ...c,
+                                amount: c.amount * (1 + annualInflation)
+                            }));
+                            spending = itemizedCategories.reduce((sum, c) => sum + c.amount, 0);
+                        } else {
+                            totalSpending *= (1 + annualInflation);
+                            spending = totalSpending;
+                        }
+                    }
+                    
+                    const netCashFlow = currentIncome - spending + lumpSum;
+                    const capitalBeforeReturns = capital + netCashFlow;
+                    const investmentReturns = capital * monthlyReturn;
+                    capital = capitalBeforeReturns + investmentReturns;
+                    
+                    results.push({
+                        month,
+                        year,
+                        monthInYear,
+                        date: dateStr,
+                        age,
+                        income: currentIncome,
+                        spending,
+                        lumpSum,
+                        netCashFlow,
+                        investmentReturns,
+                        capitalBeforeReturns,
+                        capital,
+                        remarks: remarks.join('; ')
+                    });
+                    
+                    month++;
+                    
+                    if (capital < 0) break;
+                }
+                
+                // Track unapplied events
+                while (adjIndex < adjustments.length) {
+                    const adj = adjustments[adjIndex];
+                    unappliedEvents.push({
+                        type: 'Spending Adjustment',
+                        description: `${adj.percentage > 0 ? '+' : ''}${adj.percentage}% change`,
+                        scheduledYear: adj.year,
+                        scheduledMonth: adj.month
+                    });
+                    adjIndex++;
+                }
+                
+                while (incIndex < incomeChanges.length) {
+                    const inc = incomeChanges[incIndex];
+                    unappliedEvents.push({
+                        type: 'Income Change',
+                        description: `New income: ${formatCurrency(inc.amount)}`,
+                        scheduledYear: inc.year,
+                        scheduledMonth: inc.month
+                    });
+                    incIndex++;
+                }
+                
+                while (lumpIndex < lumpSums.length) {
+                    const ls = lumpSums[lumpIndex];
+                    unappliedEvents.push({
+                        type: 'Lump Sum',
+                        description: `${ls.amount >= 0 ? 'Inflow' : 'Outflow'} of ${formatCurrency(Math.abs(ls.amount))}`,
+                        scheduledYear: ls.year,
+                        scheduledMonth: ls.month
+                    });
+                    lumpIndex++;
+                }
+                
+                // Check for perpetual wealth after 100 years
+                if (month >= maxMonths && capital > 0) {
+                    const last120 = results.slice(Math.max(0, results.length - 120));
+                    const allGrowing = last120.every((r, i) => i === 0 || r.capital >= last120[i - 1].capital);
+                    if (allGrowing && capital > data.initialCapital * 1.1) {
+                        isPerpetual = true;
+                    }
+                }
+                
+                console.log(`✅ Projection complete: ${results.length} months`);
+                
+                return {
+                    success: true,
+                    results,
+                    summary: calculateSummary(results, data, isPerpetual),
+                    unappliedEvents
+                };
+                
+            } catch (error) {
+                console.error('❌ Projection error:', error);
+                return {
+                    success: false,
+                    error: error.message,
+                    results: [],
+                    summary: null
+                };
+            }
+        }
+        
+        function calculateSummary(results, data, isPerpetual) {
+            if (!results || results.length === 0) return null;
+            
+            const last = results[results.length - 1];
+            const totalMonths = results.length;
+            const totalYears = Math.floor(totalMonths / 12);
+            
+            const totalIncome = results.reduce((sum, r) => sum + r.income, 0);
+            const totalSpending = results.reduce((sum, r) => sum + r.spending, 0);
+            const totalLumpSums = results.reduce((sum, r) => sum + r.lumpSum, 0);
+            const totalReturns = results.reduce((sum, r) => sum + r.investmentReturns, 0);
+            
+            return {
+                totalMonths,
+                totalYears,
+                finalCapital: last.capital,
+                finalAge: last.age,
+                totalIncome,
+                totalSpending,
+                totalLumpSums,
+                totalReturns,
+                isPerpetual,
+                netGain: last.capital - data.initialCapital
+            };
+        }
+        
+        function displayResults(result) {
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.remove('hidden');
+            
+            const summary = result.summary;
+            const summaryDiv = document.getElementById('resultsSummary');
+            
+            let summaryHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="bg-blue-50 dark:bg-blue-900 p-4 rounded-lg">
+                        <div class="text-sm text-gray-600 dark:text-gray-300">Final Capital</div>
+                        <div class="text-2xl font-bold">${formatCurrency(summary.finalCapital)}</div>
                     </div>
-                    
-                    <!-- Download Button -->
-                    <div class="mb-6 no-print">
-                        <button 
-                            id="downloadCsvBtn" 
-                            class="btn btn-success"
-                        >
-                            📥 Download CSV
-                        </button>
+                    <div class="bg-green-50 dark:bg-green-900 p-4 rounded-lg">
+                        <div class="text-sm text-gray-600 dark:text-gray-300">Total Returns</div>
+                        <div class="text-2xl font-bold">${formatCurrency(summary.totalReturns)}</div>
                     </div>
-                    
-                    <!-- View Toggle -->
-                    <div class="mb-4 flex items-center gap-3">
-                        <label for="viewToggle" class="text-sm font-medium">View:</label>
-                        <select id="viewToggle" class="form-input max-w-xs">
-                            <option value="yearly">Yearly Breakdown</option>
-                            <option value="monthly">Monthly Breakdown</option>
-                        </select>
-                        <span class="text-sm text-gray-500 dark:text-gray-400">Switch between monthly and yearly data views</span>
-                    </div>
-                    
-                    <!-- Results Table -->
-                    <div class="overflow-x-auto">
-                        <table class="results-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th class="text-center">Age</th>
-                                    <th class="text-right">Income</th>
-                                    <th class="text-right">Spending</th>
-                                    <th class="text-right">Net Cash Flow</th>
-                                    <th class="text-right">Investment Returns</th>
-                                    <th class="text-right">Capital</th>
-                                    <th class="text-left">Remarks</th>
-                                </tr>
-                            </thead>
-                            <tbody id="resultsTableBody">
-                                <!-- Results will be populated here -->
-                            </tbody>
-                        </table>
+                    <div class="bg-purple-50 dark:bg-purple-900 p-4 rounded-lg">
+                        <div class="text-sm text-gray-600 dark:text-gray-300">Years Projected</div>
+                        <div class="text-2xl font-bold">${summary.totalYears} years</div>
                     </div>
                 </div>
-                
-            </div>
+            `;
             
-        </main>
+            if (summary.isPerpetual) {
+                summaryHTML += `
+                    <div class="bg-yellow-50 dark:bg-yellow-900 border-l-4 border-yellow-500 p-4 mb-4">
+                        <p class="font-semibold">🎉 Your wealth is perpetual!</p>
+                        <p class="text-sm">With your current capital of ${formatCurrency(summary.finalCapital)} and consistent positive cash flow, your wealth will last forever.</p>
+                    </div>
+                `;
+            }
+            
+            summaryDiv.innerHTML = summaryHTML;
+            
+            // Render chart
+            renderChart(result.results);
+            
+            // Render table
+            renderTable(result.results);
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
         
-        <!-- Footer -->
-        <footer class="bg-white dark:bg-gray-800 shadow-md mt-12 no-print">
-            <div class="container mx-auto px-4 py-6 text-center text-sm text-gray-600 dark:text-gray-400">
-                <p>Financial Projection Tool &copy; 2025 | Built with ❤️ using Firebase, Chart.js & Tailwind CSS</p>
-            </div>
-        </footer>
+        function renderChart(results) {
+            const canvas = document.getElementById('projectionChart');
+            const ctx = canvas.getContext('2d');
+            
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#f3f4f6' : '#1f2937';
+            const gridColor = isDark ? '#374151' : '#e5e7eb';
+            
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: results.map(r => r.date),
+                    datasets: [{
+                        label: 'Capital (MYR)',
+                        data: results.map(r => r.capital),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return formatCurrency(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: textColor,
+                                maxTicksLimit: 20
+                            },
+                            grid: {
+                                color: gridColor
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: textColor,
+                                callback: function(value) {
+                                    return 'MYR ' + (value / 1000000).toFixed(1) + 'M';
+                                }
+                            },
+                            grid: {
+                                color: gridColor
+                            }
+                        }
+                    }
+                }
+            });
+        }
         
-    </div>
-    
-    <!-- Modal -->
-    <div id="modal" class="hidden fixed inset-0 z-50 items-center justify-center p-4">
-        <div class="modal-backdrop" onclick="document.getElementById('modalCancelBtn').click()"></div>
-        <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6 z-50 fade-in">
-            <h3 id="modalTitle" class="text-xl font-bold mb-4"></h3>
-            <p id="modalMessage" class="text-gray-700 dark:text-gray-300 mb-6"></p>
-            <div class="flex gap-3 justify-end">
-                <button 
-                    id="modalCancelBtn" 
-                    class="btn btn-secondary"
-                >
-                    Cancel
-                </button>
-                <button 
-                    id="modalConfirmBtn" 
-                    class="btn btn-primary"
-                >
-                    Confirm
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Main Application Script -->
-    <script type="module" src="/src/js/main.js"></script>
-    
+        function updateChartTheme(isDark) {
+            if (!chartInstance) return;
+            
+            const textColor = isDark ? '#f3f4f6' : '#1f2937';
+            const gridColor = isDark ? '#374151' : '#e5e7eb';
+            
+            chartInstance.options.plugins.legend.labels.color = textColor;
+            chartInstance.options.scales.x.ticks.color = textColor;
+            chartInstance.options.scales.x.grid.color = gridColor;
+            chartInstance.options.scales.y.ticks.color = textColor;
+            chartInstance.options.scales.y.grid.color = gridColor;
+            
+            chartInstance.update();
+        }
+        
+        function renderTable(results) {
+            const viewMode = document.getElementById('viewToggle').value;
+            const tbody = document.getElementById('resultsTableBody');
+            tbody.innerHTML = '';
+            
+            let displayData = [];
+            
+            if (viewMode === 'yearly') {
+                // Aggregate by year
+                const yearlyData = {};
+                
+                results.forEach(r => {
+                    const yearKey = Math.floor(r.month / 12);
+                    if (!yearlyData[yearKey]) {
+                        yearlyData[yearKey] = {
+                            date: r.date.substring(0, 4),
+                            age: r.age,
+                            income: 0,
+                            spending: 0,
+                            netCashFlow: 0,
+                            investmentReturns: 0,
+                            capital: r.capital,
+                            remarks: []
+                        };
+                    }
+                    
+                    yearlyData[yearKey].income += r.income;
+                    yearlyData[yearKey].spending += r.spending;
+                    yearlyData[yearKey].netCashFlow += r.netCashFlow;
+                    yearlyData[yearKey].investmentReturns += r.investmentReturns;
+                    yearlyData[yearKey].capital = r.capital;
+                    
+                    if (r.remarks) {
+                        yearlyData[yearKey].remarks.push(r.remarks);
+                    }
+                });
+                
+                displayData = Object.values(yearlyData).map(d => ({
+                    ...d,
+                    remarks: [...new Set(d.remarks.filter(r => r))].join('; ')
+                }));
+            } else {
+                displayData = results;
+            }
+            
+            displayData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50 dark:hover:bg-gray-700';
+                tr.innerHTML = `
+                    <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">${row.date}</td>
+                    <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">${row.age}</td>
+                    <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">${formatCurrency(row.income)}</td>
+                    <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">${formatCurrency(row.spending)}</td>
+                    <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">${formatCurrency(row.netCashFlow)}</td>
+                    <td class="border border-gray-300 dark:border-gray-600 px-4 py-2">${formatCurrency(row.investmentReturns)}</td>
+                    <td class="border border-gray-300 dark:border-gray-600 px-4 py-2 font-bold">${formatCurrency(row.capital)}</td>
+                    <td class="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm">${row.remarks || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        function handleDownloadCSV() {
+            if (!currentResults || !currentResults.results) {
+                alert('No results to export');
+                return;
+            }
+            
+            const results = currentResults.results;
+            let csv = 'Date,Age,Income,Spending,Net Cash Flow,Investment Returns,Capital,Remarks\n';
+            
+            results.forEach(r => {
+                csv += `${r.date},${r.age},${r.income},${r.spending},${r.netCashFlow},${r.investmentReturns},${r.capital},"${r.remarks || ''}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `financial_projection_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert('✅ CSV downloaded successfully!');
+        }
+        
+        function formatCurrency(value, currency = 'MYR', decimals = 2) {
+            if (value == null || isNaN(value)) return `${currency} 0.00`;
+            return `${currency} ${Number(value).toLocaleString('en-MY', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            })}`;
+        }
+    </script>
 </body>
 </html>
